@@ -1,0 +1,37 @@
+{
+  "name": "mongoose-route",
+  "version": "0.0.1",
+  "description": "A framework to easily create a REST API from a mongoose model",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/slepox/mongoose-route.git"
+  },
+  "keywords": [
+    "mongoose",
+    "REST",
+    "express"
+  ],
+  "author": "slepox",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/slepox/mongoose-route/issues"
+  },
+  "homepage": "https://github.com/slepox/mongoose-route#readme",
+  "dependencies": {
+    "express": "^4.13.3",
+    "mongoose": "^4.2.8",
+    "nconf": "^0.8.2",
+    "ng-admin": "^0.9.1",
+    "plural": "^0.2.0",
+    "underscore": "^1.8.3"
+  },
+  "devDependencies": {
+    "body-parser": "^1.14.1",
+    "cookie-parser": "^1.4.0",
+    "morgan": "^1.6.1"
+  }
+}
