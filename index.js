@@ -7,7 +7,7 @@ var express = require('express'),
 
 var meraModel = require('./lib/mera-model'),
   restRoute = require('./lib/rest-route');
-  //adminRoute = require('./lib/admin-route');
+  adminRoute = require('./lib/admin-route');
 
 function meraRoute() {
   var model = null, options = {};
@@ -25,9 +25,9 @@ function meraRoute() {
     restPath = options.restPath || '/'+plural(model.modelName.toLowerCase());
 
   router.use(restPath, restRoute(model, options.protects));
-  // if (!options.noAdmin) {
-  //   router.use(adminPath, adminRoute(model, options.authenticated));
-  // }
+  if (!options.noAdmin) {
+    router.use(adminPath, adminRoute(model, options.authenticated));
+  }
 
   return router;
 }
