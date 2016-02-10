@@ -1,14 +1,14 @@
 {
-  "name": "mongoose-route",
+  "name": "mera",
   "version": "0.0.1",
   "description": "A framework to easily create a REST API from a mongoose model",
   "main": "index.js",
   "scripts": {
-    "test": "npm test"
+    "test": "npm test",
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/slepox/mongoose-route.git"
+    "url": "git+https://github.com/slepox/mera.git"
   },
   "keywords": [
     "mongoose",
@@ -18,9 +18,9 @@
   "author": "slepox",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/slepox/mongoose-route/issues"
+    "url": "https://github.com/slepox/mera/issues"
   },
-  "homepage": "https://github.com/slepox/mongoose-route#readme",
+  "homepage": "https://github.com/slepox/mera#readme",
   "dependencies": {
     "express": "^4.13.3",
     "mongoose": "^4.2.8",
