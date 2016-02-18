@@ -4,7 +4,7 @@
   "description": "A framework to easily create a REST API from a mongoose model",
   "main": "index.js",
   "scripts": {
-    "test": "npm test",
+    "test": "npm test"
   },
   "repository": {
     "type": "git",
@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/slepox/mera#readme",
   "dependencies": {
+    "ejs": "^2.4.1",
     "express": "^4.13.3",
     "mongoose": "^4.2.8",
     "nconf": "^0.8.2",
