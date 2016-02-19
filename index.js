@@ -105,7 +105,7 @@ function mongooseRoute(model, options) {
       if (!item) {
         return next();
       }
-      res.json(item.output);
+      res.json(output(item));
     });
   });
 
