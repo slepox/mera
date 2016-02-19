@@ -5,7 +5,7 @@ Mongoose and Express built RESTful API
 
 # Samples
 
-```nodejs
+```javascript
 // Create a mongoose model as usual
 var mongoose = require('mongoose'), Schema = mongoose.Schema;
 
