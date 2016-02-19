@@ -1,7 +1,7 @@
 MERA
 ====
 
-Mongoose and Express built RESTful API
+**M**ongoose and **E**xpress built **R**ESTful **A**PI
 
 # Samples
 
