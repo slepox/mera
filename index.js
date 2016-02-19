@@ -11,10 +11,10 @@ function mongooseRoute(model, options) {
 
   function error(method, err, statusCode) {
     var msg = 'Failed to ' + method + ' ' + model.modelName + ' : ' + err;
-    var err = new Error(msg);
+    var retErr = new Error(msg);
     err.statusCode = statusCode;
-    debug('err: %j', err);
-    return err;
+    debug('err: %j', retErr);
+    return retErr;
   }
 
   function convert(data) {
@@ -57,7 +57,7 @@ function mongooseRoute(model, options) {
 
     // listOptions buildup
     var lo = {
-      limit: req.query._perPage || 0
+      limit: parseInt(req.query._perPage) || 0
     };
     lo.skip = Math.max((req.query._page || 1) - 1, 0) * lo.limit;
     if (req.query._sortField && req.query._sortDir) {
