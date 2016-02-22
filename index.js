@@ -51,7 +51,19 @@ function mongooseRoute(model, options) {
   router.get('/', function(req, res, next) {
 
     // filter buildup
-    var filter = _.pick(req.query, props);
+    var filter = null;
+    // regard _filter in query firstly
+    if (req.query._filters) {
+      try {
+        filter = _.pick(JSON.parse(req.query._filters), props);
+      } catch (e) {
+        debug('not valid _filter although present: %j', req.query._filter);
+      }
+    }
+    // if _filter not present, look for all direct props, which not starting with _
+    if (!filter) {
+      filter = _.pick(req.query, props);
+    }
     filter = _.extend(convert(filter), options.baseFilter);
     debug('List %s by filter %j', model.modelName, filter);
 
