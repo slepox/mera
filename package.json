@@ -13,7 +13,8 @@
   "keywords": [
     "mongoose",
     "REST",
-    "express"
+    "express",
+    "ng-admin"
   ],
   "author": "slepox",
   "license": "MIT",
@@ -26,10 +27,5 @@
     "express": "^4.13.3",
     "mongoose": "^4.2.8",
     "underscore": "^1.8.3"
-  },
-  "devDependencies": {
-    "body-parser": "^1.14.1",
-    "cookie-parser": "^1.4.0",
-    "morgan": "^1.6.1"
   }
 }
