@@ -12,7 +12,7 @@ function mongooseRoute(model, options) {
   function error(method, err, statusCode) {
     var msg = 'Failed to ' + method + ' ' + model.modelName + ' : ' + err;
     var retErr = new Error(msg);
-    err.statusCode = statusCode;
+    err.statusCode = statusCode || 500;
     debug('err: %j', retErr);
     return retErr;
   }
@@ -83,11 +83,11 @@ function mongooseRoute(model, options) {
     // list model
     model.count(filter, function(err, num) {
       if (err) {
-        return next(error('LIST', model, err));
+        return next(error('LIST', err));
       }
       model.find(filter).skip(lo.skip).limit(lo.limit).sort(lo.sort).exec(function(err2, items) {
         if (err2) {
-          return next(error('LIST', model, err2));
+          return next(error('LIST', err2));
         }
         res.set('X-Total-Count', num).json(items.map(output));
       });
@@ -100,7 +100,7 @@ function mongooseRoute(model, options) {
 
     model.create(data, function(err, item) {
       if (err) {
-        return next(error('POST', model, err));
+        return next(error('POST', err));
       }
       res.json(output(item));
     });
@@ -112,7 +112,7 @@ function mongooseRoute(model, options) {
       _id: req.params.id
     }).exec(function(err, item) {
       if (err) {
-        return next(error('GET', model, err));
+        return next(error('GET', err));
       }
       if (!item) {
         return next();
@@ -129,7 +129,7 @@ function mongooseRoute(model, options) {
       _id: req.params.id
     }).exec(function(err, item) {
       if (err) {
-        return next(error('PUT', model, err));
+        return next(error('PUT', err));
       }
       if (!item) {
         return next();
@@ -137,7 +137,7 @@ function mongooseRoute(model, options) {
       _.extend(item, data);
       item.save(function(err) {
         if (err) {
-          return next(error('PUT', model, err));
+          return next(error('PUT', err));
         }
         res.json(output(item));
       });
@@ -151,7 +151,7 @@ function mongooseRoute(model, options) {
       _id: req.params['id']
     }).exec(function(err, item) {
       if (err) {
-        return next(error('DELETE', model, err));
+        return next(error('DELETE', err));
       }
       res.json({});
     });
