@@ -34,7 +34,8 @@ function mongooseRoute(model, options) {
     return output;
   }
 
-  var props = options.props || _.keys(model.schema.tree).filter(e => !/^_/.test(e)),
+  var options = options || {},
+    props = options.props || _.keys(model.schema.tree).filter(e => !/^_/.test(e)),
     propsMapping = _.extend({ 'id': '_id' }, options.propsMapping);
 
   // protect the method if defined in protects
