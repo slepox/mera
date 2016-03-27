@@ -3,11 +3,14 @@ var express = require('express'),
   mongoose = require('mongoose'),
   Schema = mongoose.Schema,
   _ = require('underscore'),
-  debug = require('debug')('mera'),
-  ejs = require('ejs');
+  debug = require('debug')('mera');
 
 function mongooseRoute(model, options) {
   var router = express.Router();
+
+  var options = options || {},
+    props = options.props || _.keys(model.schema.tree).filter(e => !/^_/.test(e)),
+    propsMapping = _.extend({ 'id': '_id' }, options.propsMapping);
 
   function error(method, err, statusCode) {
     var msg = 'Failed to ' + method + ' ' + model.modelName + ' : ' + err;
@@ -34,9 +37,38 @@ function mongooseRoute(model, options) {
     return output;
   }
 
-  var options = options || {},
-    props = options.props || _.keys(model.schema.tree).filter(e => !/^_/.test(e)),
-    propsMapping = _.extend({ 'id': '_id' }, options.propsMapping);
+  // time filter works in such a way:
+  // if start is given, only look at end, and start/end are parsed literally by moment.js, gte start, and lt end
+  // otherwise look at start_time and then end_time
+  // so if given start and end_time, only start takes effects
+  // a special handle on end_time is if YYYY-MM-DD is given, we regard it as a full day included
+  function getTimeFilter(rawFilter) {
+    if (!options.timeFilter) {
+      return null;
+    }
+    var f = {};
+    if (rawFilter.start) {
+      f.$gte = moment(rawFilter.start).toDate();
+      if (rawFilter.end) {
+        f.$lt = moment(rawFilter.end).toDate();
+      }
+    } else if (rawFilter.start_time) {
+      f.$gte = moment(rawFilter.start_time).toDate();
+      if (rawFilter.end_time) {
+        if (/[0-9]{4,4}-[0-9]{2,2}-[0-9]{2,2}/.test(rawFilter.end_time)) {
+          f.$lt = moment(rawFilter.end_time).add(1, 'day').startOf('day').toDate();
+        } else {
+          f.$lt = moment(rawFilter.end_time).toDate();
+        }
+      }
+    }
+    if (_.isEmpty(f)) {
+      return null;
+    }
+    var timeFilter = {};
+    timeFilter[options.timeFilter] = f;
+    return timeFilter;
+  }
 
   // protect the method if defined in protects
   router.use('/', function(req, rest, next) {
@@ -53,10 +85,12 @@ function mongooseRoute(model, options) {
 
     // filter buildup
     var filter = null;
+
     // regard _filter in query firstly
     if (req.query._filters) {
       try {
         filter = _.pick(JSON.parse(req.query._filters), props);
+        _.extend(filter, getTimeFilter(req.query._filter));
       } catch (e) {
         debug('not valid _filter although present: %j', req.query._filter);
       }
@@ -64,7 +98,9 @@ function mongooseRoute(model, options) {
     // if _filter not present, look for all direct props, which not starting with _
     if (!filter) {
       filter = _.pick(req.query, props);
+      _.extend(filter, getTimeFilter(req.query));
     }
+
     filter = _.extend(convert(filter), options.baseFilter);
     debug('List %s by filter %j', model.modelName, filter);
 
@@ -157,21 +193,6 @@ function mongooseRoute(model, options) {
       res.json({});
     });
   });
-
-  // var ngaBaseTemplate = fs.readFileSync(path.join(__dirname, './templates/nga-base.ejs'));
-  // router.get('/nga-base.js', function(req, res, next) {
-  //   var content = ejs.render(ngaBaseTemplate, {
-  //     appName: options.appName || (model.modelName + 'App'),
-  //     title: options.title || model.modelName,
-  //     baseApiUrl: req.baseUrl.split('/').slice(0,-1).join('/')
-  //   });
-  //   res.set('content-type', 'text/javascript').end(content);
-  // });
-
-  // var ngaBaseTemplate = fs.readFileSync(path.join(__dirname, './templates/nga-entity.ejs'));
-  // router.get('/nga-entity.js', function(req, res, next) {
-
-  // });
 
   return router;
 }
