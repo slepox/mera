@@ -146,7 +146,7 @@ function mongooseRoute(model, options) {
   router.get('/:id', function(req, res, next) {
     debug('Get model %s by id %s', model.modelName, req.params.id);
     model.findOne({
-      _id: req.params.id
+      (options.identifier || '_id'): req.params.id
     }).exec(function(err, item) {
       if (err) {
         return next(error('GET', err));
@@ -163,7 +163,7 @@ function mongooseRoute(model, options) {
     debug('Put to model %s, id %s by data %j', model.modelName, req.params.id, data);
 
     model.findOne({
-      _id: req.params.id
+      (options.identifier || '_id'): req.params.id
     }).exec(function(err, item) {
       if (err) {
         return next(error('PUT', err));
@@ -185,7 +185,7 @@ function mongooseRoute(model, options) {
     debug('delete model %s by id %s', model.modelName, req.params.id);
 
     model.remove({
-      _id: req.params['id']
+      (options.identifier || '_id'): req.params['id']
     }).exec(function(err, item) {
       if (err) {
         return next(error('DELETE', err));

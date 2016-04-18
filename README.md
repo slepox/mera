@@ -24,6 +24,7 @@ var router = mera(Person, {
   baseFilter: // used at listing
   defaultSort: // used at listing
   protects: // { LIST: function(req, cb), GET: , PUT: , ... } // to protect a certain method
+  identifier: // String, used as { identifier: req.params.id } when /:id is passed in
 });
 
 app.use('/persons', router); // use in app, all RESTful APIs are available.
