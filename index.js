@@ -10,7 +10,8 @@ function mongooseRoute(model, options) {
 
   var options = options || {},
     props = options.props || _.keys(model.schema.tree).filter(e => !/^_/.test(e)),
-    propsMapping = _.extend({ 'id': '_id' }, options.propsMapping);
+    propsMapping = _.extend({ 'id': '_id' }, options.propsMapping),
+    _id = options._id || '_id';
 
   function error(method, err, statusCode) {
     var msg = 'Failed to ' + method + ' ' + model.modelName + ' : ' + err;
@@ -32,6 +33,7 @@ function mongooseRoute(model, options) {
   }
 
   function output(item) {
+    if (!item)  return {};
     var output = {};
     props.forEach(p => { output[p] = item[p] }); // item can have virtual props so they need to be assigned one by one.
     return output;
@@ -143,11 +145,15 @@ function mongooseRoute(model, options) {
     });
   });
 
+  router.use('/:id', function(req, res, next) {
+    req.id_filter = {};
+    req.id_filter[options._id || '_id'] = req.params.id;
+    next();
+  });
+
   router.get('/:id', function(req, res, next) {
     debug('Get model %s by id %s', model.modelName, req.params.id);
-    model.findOne({
-      (options.identifier || '_id'): req.params.id
-    }).exec(function(err, item) {
+    model.findOne(req.id_filter).exec(function(err, item) {
       if (err) {
         return next(error('GET', err));
       }
@@ -162,9 +168,7 @@ function mongooseRoute(model, options) {
     var data = convert(req.body);
     debug('Put to model %s, id %s by data %j', model.modelName, req.params.id, data);
 
-    model.findOne({
-      (options.identifier || '_id'): req.params.id
-    }).exec(function(err, item) {
+    model.findOne(req.id_filter).exec(function(err, item) {
       if (err) {
         return next(error('PUT', err));
       }
@@ -184,13 +188,11 @@ function mongooseRoute(model, options) {
   router.delete('/:id', function(req, res, next) {
     debug('delete model %s by id %s', model.modelName, req.params.id);
 
-    model.remove({
-      (options.identifier || '_id'): req.params['id']
-    }).exec(function(err, item) {
+    model.remove(req.id_filter).exec(function(err, item) {
       if (err) {
         return next(error('DELETE', err));
       }
-      res.json({});
+      res.json(output(item));
     });
   });
 
