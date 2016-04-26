@@ -25,6 +25,7 @@ var router = mera(Person, {
   defaultSort: // used at listing
   protects: // { LIST: function(req, cb), GET: , PUT: , ... } // to protect a certain method
   _id: // String, used as { options._id: req.params.id } when /:id is passed in
+  omitProps: // [String], list of all props to omit at output, 'output' is always omitted
 });
 
 app.use('/persons', router); // use in app, all RESTful APIs are available.

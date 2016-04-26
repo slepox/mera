@@ -9,7 +9,8 @@ function mongooseRoute(model, options) {
   var router = express.Router();
 
   var options = options || {},
-    props = options.props || _.keys(model.schema.tree).filter(e => !/^_/.test(e)),
+    omitProps = ['output'].concat(options.omitProps),
+    props = options.props || _.keys(model.schema.tree).filter(e => !/^_/.test(e)).filter(e => omitProps.indexOf(e) == -1),
     propsMapping = _.extend({ 'id': '_id' }, options.propsMapping),
     _id = options._id || '_id';
 
