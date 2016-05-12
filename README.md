@@ -26,6 +26,7 @@ var router = mera(Person, {
   protects: // { LIST: function(req, cb), GET: , PUT: , ... } // to protect a certain method
   _id: // String, used as { options._id: req.params.id } when /:id is passed in
   omitProps: // [String], list of all props to omit at output, 'output' is always omitted
+  uploadProps: // {'upload_file_prop': 'prop_to_be_replaced', }
 });
 
 app.use('/persons', router); // use in app, all RESTful APIs are available.

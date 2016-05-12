@@ -13,7 +13,8 @@ function mongooseRoute(model, options) {
     omitProps = ['output'].concat(options.omitProps),
     props = options.props || _.keys(model.schema.tree).filter(e => !/^_/.test(e)).filter(e => omitProps.indexOf(e) == -1),
     propsMapping = _.extend({ 'id': '_id' }, options.propsMapping),
-    _id = options._id || '_id';
+    _id = options._id || '_id',
+    uploadProps = options.uploadProps || {};
 
   function error(method, err, statusCode) {
     var msg = 'Failed to ' + method + ' ' + model.modelName + ' : ' + err;
@@ -72,6 +73,17 @@ function mongooseRoute(model, options) {
     var timeFilter = {};
     timeFilter[options.timeFilter] = f;
     return timeFilter;
+  }
+  
+  function replaceUploaded(req, res, next) {
+    if (!_.isEmpty(uploadProps)) {
+      _.keys(uploadProps).forEach( k => {
+        if (req.body[k]) {
+          req.body[uploadProps[k]] = req.body[k];
+        }
+      });
+    }
+    next();
   }
 
   // protect the method if defined in protects
@@ -134,8 +146,8 @@ function mongooseRoute(model, options) {
       });
     });
   });
-
-  router.post('/', function(req, res, next) {
+  
+  router.post('/', replaceUploaded, function(req, res, next) {
     var data = convert(req.body);
     debug('Post to model %s by data %j', model.modelName, data);
 
@@ -166,7 +178,7 @@ function mongooseRoute(model, options) {
     });
   });
 
-  router.put('/:id', function(req, res, next) {
+  router.put('/:id', replaceUploaded, function(req, res, next) {
     var data = convert(req.body);
     debug('Put to model %s, id %s by data %j', model.modelName, req.params.id, data);
 
