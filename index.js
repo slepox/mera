@@ -25,7 +25,6 @@ function mongooseRoute(model, options) {
   }
 
   function convert(data) {
-    data = _.pick(data, props);
     _.each(_.keys(propsMapping), k => {
       if (data[k] && propsMapping[k] != k) {
         data[propsMapping[k]] = data[k];
@@ -36,7 +35,7 @@ function mongooseRoute(model, options) {
   }
 
   function output(item) {
-    if (!item)  return {};
+    if (!item) return {};
     var output = {};
     props.forEach(p => { output[p] = item[p] }); // item can have virtual props so they need to be assigned one by one.
     return output;
@@ -74,16 +73,26 @@ function mongooseRoute(model, options) {
     timeFilter[options.timeFilter] = f;
     return timeFilter;
   }
-  
+
   function replaceUploaded(req, res, next) {
     if (!_.isEmpty(uploadProps)) {
-      _.keys(uploadProps).forEach( k => {
+      _.keys(uploadProps).forEach(k => {
         if (req.body[k]) {
           req.body[uploadProps[k]] = req.body[k];
         }
       });
     }
     next();
+  }
+
+  function pickFilters(base, raw) {
+    _.keys(raw).forEach(k => {
+      var secs = k.split('.'), bk = secs.shift(1);
+      if (props.indexOf(bk) == -1)
+        return;
+      base[k] = raw[k];
+    });
+    return base;
   }
 
   // protect the method if defined in protects
@@ -100,24 +109,21 @@ function mongooseRoute(model, options) {
   router.get('/', function(req, res, next) {
 
     // filter buildup
-    var filter = null;
+    var filter = _.extend({}, options.baseFilter);
 
     // regard _filter in query firstly
     if (req.query._filters) {
       try {
-        filter = _.pick(JSON.parse(req.query._filters), props);
-        _.extend(filter, getTimeFilter(req.query._filter));
+        pickFilters(filter, JSON.parse(req.query._filters));
       } catch (e) {
         debug('not valid _filter although present: %j', req.query._filter);
       }
+    } else {
+      pickFilters(filter, req.query);
     }
-    // if _filter not present, look for all direct props, which not starting with _
-    if (!filter) {
-      filter = _.pick(req.query, props);
-      _.extend(filter, getTimeFilter(req.query));
-    }
+    filter = convert(filter);
+    _.extend(filter, getTimeFilter(req.query));
 
-    filter = _.extend(convert(filter), options.baseFilter);
     debug('List %s by filter %j', model.modelName, filter);
 
     // listOptions buildup
@@ -146,7 +152,7 @@ function mongooseRoute(model, options) {
       });
     });
   });
-  
+
   router.post('/', replaceUploaded, function(req, res, next) {
     var data = convert(req.body);
     debug('Post to model %s by data %j', model.modelName, data);
