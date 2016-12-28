@@ -8,19 +8,20 @@ MERA
 As you build a REST API with mera, you get APIs:
 
 - GET /?querya=xx&queryb=xx&start_time=xx&end_time=xx&_filter=xx&_page=x&_perPage=x
-  - Fully supported LIST
-    - any allowed field can be added as a query field for filtering
-    - JSON string can passed in as _filter, if you prefer
-    - start_time and end_time to filter a time field if set
-    - _page and _perPage for pagination, X-Total-Count in response head for total count
-- GET /:id?querya=xx
-  - GET by ID, can filter by query as LIST
+  - Fully supported List
+    - Any allowed field can be added as a query field for filtering
+    - JSON string can passed in by _filter, if you prefer
+    - Use start_time and end_time to filter a time range if timeFilter is set
+    - Use _page and _perPage for pagination, X-Total-Count in response head for total count
+    - Use _sortDir (ASC|DESC) and _sortField to sort any allowed field
+- GET /:id
+  - Get by ID, simply enough
 - POST /
-  - use body to create a new doc, all unknown fields will be omitted, and all allowed fields to create
+  - Use JSON body to create a new doc; any unknown field or not allowed field will be omitted
 - PUT /:id
-  - use body to update
+  - Use JSON body to update a doc, similar
 - DELETE /:id
-  - to delete one
+  - Delete by ID
 
 # Samples
 
@@ -52,3 +53,8 @@ var router = mera(Person, {
 app.use('/persons', router); // use in app, all RESTful APIs are available.
 ```
 
+# and Frontend?
+
+This API is a perfect companion of [ng-admin](http://ng-admin-book.marmelab.com/), an Angular based management UI.
+
+You should be able to satify 99% of your management requirements in 1 hour for a model if your db is ready.
