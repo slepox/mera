@@ -23,10 +23,16 @@
   },
   "homepage": "https://github.com/slepox/mera#readme",
   "dependencies": {
-    "ejs": "^2.4.1",
     "express": "^4.13.3",
     "moment": "^2.13.0",
     "mongoose": "^4.2.8",
-    "underscore": "^1.8.3"
+    "underscore": "^1.8.3",
+    "xlsx": "^0.8.1"
+  },
+  "devDependencies": {
+    "body-parser": "^1.16.0",
+    "cookie-parser": "^1.4.3",
+    "debug": "^2.6.0",
+    "morgan": "^1.7.0"
   }
 }

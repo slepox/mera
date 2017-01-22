@@ -4,7 +4,10 @@ var express = require('express'),
   Schema = mongoose.Schema,
   _ = require('underscore'),
   moment = require('moment'),
-  debug = require('debug')('mera');
+  debug = require('debug')('mera'),
+  XLSX = require('xlsx'),
+  os = require('os'),
+  path = require('path');
 
 function mongooseRoute(model, options) {
   var router = express.Router();
@@ -95,6 +98,70 @@ function mongooseRoute(model, options) {
     return base;
   }
 
+  function Workbook() {
+    if (!(this instanceof Workbook)) return new Workbook();
+    this.SheetNames = [];
+    this.Sheets = {};
+  }
+
+  function datenum(v, date1904) {
+    if (date1904) v += 1462;
+    var epoch = Date.parse(v);
+    return (epoch - new Date(Date.UTC(1899, 11, 30))) / (24 * 60 * 60 * 1000);
+  }
+
+  function sheet_from_array_of_arrays(data, opts) {
+    var ws = {};
+    var range = { s: { c: 10000000, r: 10000000 }, e: { c: 0, r: 0 } };
+    for (var R = 0; R != data.length; ++R) {
+      for (var C = 0; C != data[R].length; ++C) {
+        if (range.s.r > R) range.s.r = R;
+        if (range.s.c > C) range.s.c = C;
+        if (range.e.r < R) range.e.r = R;
+        if (range.e.c < C) range.e.c = C;
+        var cell = { v: data[R][C] };
+        if (cell.v == null) continue;
+        var cell_ref = XLSX.utils.encode_cell({ c: C, r: R });
+
+        if (typeof cell.v === 'number') cell.t = 'n';
+        else if (typeof cell.v === 'boolean') cell.t = 'b';
+        else if (cell.v instanceof Date) {
+          cell.t = 'n'; cell.z = XLSX.SSF._table[14];
+          cell.v = datenum(cell.v);
+        }
+        else cell.t = 's';
+
+        ws[cell_ref] = cell;
+      }
+    }
+    if (range.s.c < 10000000) ws['!ref'] = XLSX.utils.encode_range(range);
+    return ws;
+  }
+
+  function formatToXlsx(data, name) {
+    var ws_name = "SheetJS";
+    var wb = new Workbook(), ws = sheet_from_array_of_arrays(data);
+
+    /* add worksheet to workbook */
+    wb.SheetNames.push(ws_name);
+    wb.Sheets[ws_name] = ws;
+
+    var tempFile = path.join(os.tmpdir(), (name || (new Date().toString() + '.xlsx')));
+    XLSX.writeFile(wb, tempFile);
+    return tempFile;
+  }
+
+  function formatToCsv(rows, head) {
+    var lines = []
+    if (head) {
+      lines.push(head.map(e => `"${e}"`).join(','))
+    }
+    rows.forEach(row => {
+      lines.push(row.map(e => `"${e}"`).join(','))
+    })
+    return lines.join('\r\n')
+  }
+
   // protect the method if defined in protects
   router.use('/', function(req, rest, next) {
     var protects = options.protects || {};
@@ -144,12 +211,43 @@ function mongooseRoute(model, options) {
       if (err) {
         return next(error('LIST', err));
       }
-      model.find(filter).skip(lo.skip).limit(lo.limit).sort(lo.sort).exec(function(err2, items) {
+      var items = [], limit = Math.min(lo.limit, 1000), skip = lo.skip;
+
+      function findBatch(cb) {
+        model.find(filter).sort(lo.sort).skip(skip).limit(limit).exec(function(errB, itemsB) {
+          if (errB) return cb(errB);
+          items = items.concat(itemsB)
+          // if get all items, finish batch
+          if (items.length >= lo.limit) {
+            return cb(null, items)
+          }
+          // if current fetch is less than a batch, which means no more items to get, finish batch
+          if (itemsB.length < limit) {
+            return cb(null, items);
+          }
+          // else, continue
+          skip = skip + itemsB.length;
+          findBatch(cb)
+        });
+      }
+      findBatch((err2, items) => {
         if (err2) {
           return next(error('LIST', err2));
         }
-        res.set('X-Total-Count', num).json(items.map(output));
-      });
+        if (req.query.format == 'csv') {
+          res.set('Content-Type', 'text/csv');
+          var rows = items.map(e => props.map(k => e[k]));
+          var csvout = formatToCsv(rows, props);
+          res.send(csvout);
+        } else if (req.query.format == 'xlsx') {
+          var rows = items.map(e => props.map(k => e[k]));
+          rows.unshift(props);
+          var wbout = formatToXlsx(rows, model.modelName + '_' + new Date().getTime().toString() + '.xlsx');
+          res.sendfile(wbout);
+        } else {
+          res.set('X-Total-Count', num).json(items.map(output));
+        }
+      })
     });
   });
 
