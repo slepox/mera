@@ -14,6 +14,10 @@ As you build a REST API with mera, you get APIs:
     - Use start_time and end_time to filter a time range if timeFilter is set
     - Use _page and _perPage for pagination, X-Total-Count in response head for total count
     - Use _sortDir (ASC|DESC) and _sortField to sort any allowed field
+    - Use format=<xxx> to export a certain format, now supports
+      - csv
+      - xlsx
+      - json (default)
 - GET /:id
   - Get by ID, simply enough
 - POST /
