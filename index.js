@@ -43,9 +43,7 @@ function mongooseRoute(model, options) {
     if (!item) return {};
     var output = {};
     props.forEach(p => {
-      if (!_.isEmpty(item[p])) {
-        output[p] = item[p]
-      }
+      output[p] = item[p]
     }); // item can have virtual props so they need to be assigned one by one.
     return output;
   }
