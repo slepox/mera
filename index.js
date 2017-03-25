@@ -18,6 +18,8 @@ function mongooseRoute(model, options) {
     propsMapping = _.extend({ 'id': '_id' }, options.propsMapping),
     _id = options._id || '_id',
     uploadProps = options.uploadProps || {};
+  
+  options.batchSize = options.batchSize || 1000;
 
   function error(method, err, statusCode) {
     var msg = 'Failed to ' + method + ' ' + model.modelName + ' : ' + err;
@@ -211,7 +213,7 @@ function mongooseRoute(model, options) {
       if (err) {
         return next(error('LIST', err));
       }
-      var items = [], limit = Math.min(lo.limit, 1000), skip = lo.skip;
+      var items = [], limit = Math.min(lo.limit, options.batchSize), skip = lo.skip;
 
       function findBatch(cb) {
         model.find(filter).sort(lo.sort).skip(skip).limit(limit).exec(function(errB, itemsB) {
