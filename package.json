@@ -1,6 +1,6 @@
 {
   "name": "mera",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "A framework to easily create a REST API from a mongoose model",
   "main": "index.js",
   "scripts": {
