@@ -18,7 +18,7 @@ function mongooseRoute(model, options) {
     propsMapping = _.extend({ 'id': '_id' }, options.propsMapping),
     _id = options._id || '_id',
     uploadProps = options.uploadProps || {};
-  
+
   options.batchSize = options.batchSize || 1000;
 
   function error(method, err, statusCode) {
@@ -42,7 +42,11 @@ function mongooseRoute(model, options) {
   function output(item) {
     if (!item) return {};
     var output = {};
-    props.forEach(p => { output[p] = item[p] }); // item can have virtual props so they need to be assigned one by one.
+    props.forEach(p => {
+      if (!_.isEmpty(item[p])) {
+        output[p] = item[p]
+      }
+    }); // item can have virtual props so they need to be assigned one by one.
     return output;
   }
 
