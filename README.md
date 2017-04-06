@@ -52,6 +52,7 @@ var router = mera(Person, {
   omitProps: // [String], list of all props to omit at output, 'output' is always omitted
   uploadProps: // {'upload_file_prop': 'prop_to_be_replaced', }
   timeFilter: // 'field_name', to use this field for time search
+  textFields: [String] // field to be search as text, which means using $regex operator
 });
 
 app.use('/persons', router); // use in app, all RESTful APIs are available.

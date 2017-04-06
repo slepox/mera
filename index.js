@@ -20,6 +20,7 @@ function mongooseRoute(model, options) {
     uploadProps = options.uploadProps || {};
 
   options.batchSize = options.batchSize || 1000;
+  options.textFields = options.textFields || [];
 
   function error(method, err, statusCode) {
     var msg = 'Failed to ' + method + ' ' + model.modelName + ' : ' + err;
@@ -185,15 +186,22 @@ function mongooseRoute(model, options) {
     // regard _filter in query firstly
     if (req.query._filters) {
       try {
-        pickFilters(filter, JSON.parse(req.query._filters));
+        var _filters = JSON.parse(req.query._filters);
+        pickFilters(filter, _filters);
+        _.extend(filter, getTimeFilter(_filters));
       } catch (e) {
         debug('not valid _filter although present: %j', req.query._filter);
       }
-    } else {
-      pickFilters(filter, req.query);
     }
-    filter = convert(filter);
+    pickFilters(filter, req.query);
     _.extend(filter, getTimeFilter(req.query));
+    filter = convert(filter);
+
+    options.textFields.forEach(tf => {
+      if (filter[tf] && typeof filter[tf] == 'string') {
+        filter[tf] = { $regex: filter[tf] };
+      }
+    });
 
     debug('List %s by filter %j', model.modelName, filter);
 
