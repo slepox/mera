@@ -46,6 +46,13 @@ function mongooseRoute(model, options) {
     props.forEach(p => {
       output[p] = item[p]
     }); // item can have virtual props so they need to be assigned one by one.
+    Object.keys(propsMapping).forEach( k => {
+      var originalKey = propsMapping[k];
+      if (output[originalKey]) {
+        output[k] = output[originalKey];
+        delete output[originalKey];
+      }
+    });
     return output;
   }
 
